@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Article, NewsFilters } from '../types/news';
+import { Article, Category, NewsFilters } from '../types/news';
 import { showErrorToast } from '../utils/toast';
 
 const NEWS_API_KEY = import.meta.env.VITE_NEWS_API_KEY;
@@ -36,6 +36,24 @@ const categoryMappings = {
   }
 };
 
+const normalizeCategory = (apiCategory: string): Category => {
+  const map: Record<string, Category> = {
+    'general': 'General',
+    'news': 'General',
+    'business': 'Business',
+    'technology': 'Technology',
+    'sports': 'Sports',
+    'sport': 'Sports',
+    'entertainment': 'Entertainment',
+    'culture': 'Entertainment',
+    'arts': 'Entertainment',
+    'science': 'Science',
+    'health': 'Health',
+    'healthcare': 'Health'
+  };
+  return map[apiCategory.toLowerCase()] || 'General';
+};
+
 
 // Normalize article data from different sources to our Article type
 const normalizeArticle = (article: any, source: string, category: string ): Article | null=> {
@@ -54,7 +72,7 @@ const normalizeArticle = (article: any, source: string, category: string ): Arti
   url: article.url || article.webUrl || article.web_url || '',
   imageUrl: article.urlToImage || article.multimedia?.[0]?.url && "https://static01.nyt.com/"+article.multimedia?.[0]?.url || article.fields?.thumbnail || undefined,
   source,
-  category: article.category || article.sectionName || article.section_name || category || 'General',
+  category: normalizeCategory(article.category || article.sectionName || article.section_name || category || 'General'),
   author: article.author || article.byline?.original || undefined,
   publishedAt: article.publishedAt || article.webPublicationDate || article.pub_date || new Date().toISOString(),
   }
